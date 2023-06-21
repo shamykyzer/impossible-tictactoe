@@ -12,11 +12,11 @@ CLOCK = pg.time.Clock()
 # Set up the game window
 screen = pg.display.set_mode((400, 400), 0, 32)
 pg.display.set_caption("IMPOSSIBLE Tic Tac Toe")
-initiating_window = pg.image.load("gameboard.png")
+initiating_window = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/gameboard.png")
 
 # Load the X and O images
-x_img = pg.image.load("X.jpg")
-o_img = pg.image.load("O.jpg")
+x_img = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/X.jpg")
+o_img = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/O.jpg")
 
 # Scale the game window and images
 initiating_window = pg.transform.scale(initiating_window, (400, 400))
