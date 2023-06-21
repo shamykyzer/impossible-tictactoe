@@ -6,6 +6,7 @@ pg.init()
 
 # Initialize the game variables
 XO = 'X'
+AI = 'O'
 fps = 30
 CLOCK = pg.time.Clock()
 
@@ -82,6 +83,65 @@ def handle_user_input():
             if board[row][col] is None:
                 board[row][col] = XO
                 update_game_state()
+                if not winner and not draw:
+                    ai_move()
+
+# Function to make AI move using the Minimax algorithm
+def ai_move():
+    best_score = float('-inf')
+    best_move = None
+
+    # Loop through all possible moves
+    for row in range(3):
+        for col in range(3):
+            if board[row][col] is None:
+                board[row][col] = AI
+                score = minimax(board, 0, False)
+                board[row][col] = None
+
+                # Update the best move
+                if score > best_score:
+                    best_score = score
+                    best_move = (row, col)
+
+    # Make the best move
+    if best_move:
+        row, col = best_move
+        board[row][col] = AI
+        update_game_state()
+
+# Minimax algorithm
+def minimax(board, depth, is_maximizing):
+    result = check_winner()
+    if result is not None:
+        return scores[result]
+
+    if check_draw():
+        return 0
+
+    if is_maximizing:
+        best_score = float('-inf')
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] is None:
+                    board[row][col] = AI
+                    score = minimax(board, depth + 1, False)
+                    board[row][col] = None
+                    best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] is None:
+                    board[row][col] = XO
+                    score = minimax(board, depth + 1, True)
+                    board[row][col] = None
+                    best_score = min(score, best_score)
+        return best_score
+
+# Define scores for AI and user
+scores = {'O': 1, 'X': -1, 'draw': 0}
 
 running = True
 while running:
