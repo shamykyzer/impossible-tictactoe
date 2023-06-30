@@ -12,7 +12,7 @@ fps = 60
 CLOCK = pg.time.Clock()
 
 # Set up the game window
-screen = pg.display.set_mode((400, 400), 0, 32)
+screen = pg.display.set_mode((WIDTH, HEIGHT), 0, 32)
 pg.display.set_caption("TIC TAC TOE")
 initiating_window = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/gameboard.png")
 
@@ -28,6 +28,21 @@ o_img = pg.transform.scale(o_img, (120, 120))
 winner = None
 draw = False
 board = [[None] * 3, [None] * 3, [None] * 3]
+
+def main():
+    while True:
+        handle_user_input()
+        screen.fill(BG_COLOR)
+        screen.blit(initiating_window, (0, 0))
+        # Draw X and O images on the board based on the current game state
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == 'X':
+                    screen.blit(x_img, (col * 133 + 10, row * 133 + 10))
+                elif board[row][col] == 'O':
+                    screen.blit(o_img, (col * 133 + 10, row * 133 + 10))
+        pg.display.update()
+        CLOCK.tick(fps)
 
 # Function to update the game state after each move
 def update_game_state():
@@ -146,21 +161,7 @@ def minimax(board, depth, is_maximizing):
 # Define scores for AI and user
 scores = {'O': 1, 'X': -1, 'draw': 0}
 
-running = True
-while running:
-    handle_user_input()
-    screen.fill((255, 255, 255))
-    screen.blit(initiating_window, (0, 0))
-    # Draw X and O images on the board based on the current game state
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == 'X':
-                screen.blit(x_img, (col * 133 + 10, row * 133 + 10))
-            elif board[row][col] == 'O':
-                screen.blit(o_img, (col * 133 + 10, row * 133 + 10))
-    pg.display.update()
-    CLOCK.tick(fps)
-
+main()
 # Quit the game
 pg.quit()
 sys.exit()

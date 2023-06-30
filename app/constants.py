@@ -4,8 +4,8 @@
 
 # --- PIXELS ---
 
-WIDTH = 600
-HEIGHT = 600
+WIDTH = 400
+HEIGHT = 400
 
 ROWS = 3
 COLS = 3
