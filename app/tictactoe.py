@@ -1,9 +1,20 @@
 import pygame as pg
 from pygame.locals import *
 import sys
+import random
 from constants import *
 
+# Initialize pygame
 pg.init()
+
+# Create the game window
+screen = pg.display.set_mode((WIDTH, HEIGHT))
+pg.display.set_caption("Tic Tac Toe")
+
+# Initialize the game variables
+XO = 'X'
+AI = 'O'
+FPS = 60
 
 class Board:
     def __init__(self):
@@ -34,7 +45,7 @@ class Board:
                 color = CIRC_COLOR if self.squares[0][0] == 'O' else CROSS_COLOR
                 iPos = (20, 20)
                 fPos = (WIDTH - 20, HEIGHT - 20)
-                pg.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
+                pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
             return self.squares[0][0]
 
         if self.squares[2][0] == self.squares[1][1] == self.squares[0][2] and self.squares[2][0] is not None:
@@ -42,7 +53,7 @@ class Board:
                 color = CIRC_COLOR if self.squares[2][0] == 'O' else CROSS_COLOR
                 iPos = (20, HEIGHT - 20)
                 fPos = (WIDTH - 20, 20)
-                pg.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
+                pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
             return self.squares[2][0]
 
         return None
@@ -73,28 +84,91 @@ class Game:
         self.board = Board()
         self.player = 'X'
         self.running = True
+        self.mode = 'PvP'
 
     def handle_user_input(self):
         for event in pg.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 self.running = False
-            elif event.type == MOUSEBUTTONDOWN and not self.board.final_state() and not self.board.is_full():
-                mouse_pos = pg.mouse.get_pos()
-                col = mouse_pos[0] // SQSIZE
-                row = mouse_pos[1] // SQSIZE
-                if self.board.empty_sqr(row, col):
-                    self.board.mark_sqr(row, col, self.player)
-                    self.player = 'O' if self.player == 'X' else 'X'
+            elif event.type == pg.MOUSEBUTTONDOWN and not self.board.final_state() and not self.board.is_full():
+                if self.mode == 'PvP':
+                    self.handle_pvp_move(event)
+                elif self.mode == 'AI' and self.player == XO:
+                    self.handle_pvp_move(event)
+
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_p:
+                    self.mode = 'PvP'
+                    self.reset()
+                elif event.key == pg.K_a:
+                    self.mode = 'AI'
+                    self.reset()
+                elif event.key == pg.K_SPACE and (self.board.final_state() or self.board.is_full()):
+                    self.reset()
+
+    def handle_pvp_move(self, event):
+        mouse_pos = pg.mouse.get_pos()
+        col = mouse_pos[0] // SQSIZE
+        row = mouse_pos[1] // SQSIZE
+        if self.board.empty_sqr(row, col):
+            self.board.mark_sqr(row, col, self.player)
+            self.player = 'O' if self.player == 'X' else 'X'
+
+    def minimax(self, board, depth, isMaximizing):
+        winner = board.final_state()
+        if winner == AI:
+            return {'score': 1, 'row': None, 'col': None}
+        elif winner == XO:
+            return {'score': -1, 'row': None, 'col': None}
+        elif board.is_full():
+            return {'score': 0, 'row': None, 'col': None}
+
+        if isMaximizing:
+            best_score = {'score': -float('inf'), 'row': None, 'col': None}
+            for row in range(3):
+                for col in range(3):
+                    if board.empty_sqr(row, col):
+                        board.mark_sqr(row, col, AI)
+                        score = self.minimax(board, depth + 1, False)
+                        board.squares[row][col] = None
+                        board.marked_sqrs -= 1
+                        score['row'] = row
+                        score['col'] = col
+                        best_score = max(best_score, score, key=lambda x:x['score'])
+            return best_score
+
+        else:
+            best_score = {'score': float('inf'), 'row': None, 'col': None}
+            for row in range(3):
+                for col in range(3):
+                    if board.empty_sqr(row, col):
+                        board.mark_sqr(row, col, XO)
+                        score = self.minimax(board, depth + 1, True)
+                        board.squares[row][col] = None
+                        board.marked_sqrs -= 1
+                        score['row'] = row
+                        score['col'] = col
+                        best_score = min(best_score, score, key=lambda x:x['score'])
+            return best_score
+
+    def handle_ai_move(self):
+        if self.board.is_empty():
+            row, col = random.choice([(0, 0), (0, 2), (2, 0), (2, 2)])
+        else:
+            move = self.minimax(self.board, 0, True)
+            row, col = move['row'], move['col']
+        self.board.mark_sqr(row, col, self.player)
+        self.player = 'X'
+
 
     def update_screen(self):
         screen.fill(BG_COLOR)
-        
-        # Draw grid lines
+
         for x in range(SQSIZE, WIDTH, SQSIZE):
             pg.draw.line(screen, LINE_COLOR, (x, 0), (x, HEIGHT), LINE_WIDTH)
         for y in range(SQSIZE, HEIGHT, SQSIZE):
             pg.draw.line(screen, LINE_COLOR, (0, y), (WIDTH, y), LINE_WIDTH)
-        
+
         for row in range(3):
             for col in range(3):
                 if self.board.squares[row][col] == 'X':
@@ -106,25 +180,23 @@ class Game:
                     x_pos = col * SQSIZE + SQSIZE // 2
                     y_pos = row * SQSIZE + SQSIZE // 2
                     pg.draw.circle(screen, CIRC_COLOR, (x_pos, y_pos), RADIUS, CIRC_WIDTH)
+
+        mode_text = f"Mode: {self.mode}"
+        font = pg.font.Font(None, 30)
+        text = font.render(mode_text, True, TEXT_COLOR)
+        screen.blit(text, (10, 10))
+
         pg.display.update()
 
     def run(self):
+        clock = pg.time.Clock()
         while self.running:
             self.handle_user_input()
             self.update_screen()
-            if self.board.final_state(show=True) or self.board.is_full():
-                self.running = False
-                
-    
-    # --- OTHER METHODS ---
-    
-    def make_move(self, row, col):
-        self.board.mark_sqr(row, col, self.player)
-        self.update_screen()
-        self.next_turn()
-
-    def next_turn(self):
-        self.player = 'O' if self.player == 'X' else 'X'
+            if self.mode == 'AI' and self.player == AI and not self.board.final_state() and not self.board.is_full():
+                self.handle_ai_move()
+                self.player = 'X'
+            clock.tick(FPS)
 
     def reset(self):
         self.board = Board()
@@ -132,13 +204,8 @@ class Game:
         self.running = True
         self.update_screen()
 
-
-screen = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("Tic Tac Toe")
-
 game = Game()
 game.run()
 
-# Quit the game
 pg.quit()
 sys.exit()
