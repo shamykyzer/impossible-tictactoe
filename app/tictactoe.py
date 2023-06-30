@@ -113,6 +113,8 @@ class Game:
         self.running = True
         self.mode = 'PvP'
 
+    # Handles user input for game actions
+    # This function will handle all user inputs during the game
     def handle_user_input(self):
         for event in pg.event.get():
             if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
@@ -133,6 +135,7 @@ class Game:
                 elif event.key == pg.K_SPACE and (self.board.final_state() or self.board.is_full()):
                     self.reset()
 
+    # This function will handle player moves when the game mode is player versus player
     def handle_pvp_move(self, event):
         mouse_pos = pg.mouse.get_pos()
         col = mouse_pos[0] // SQSIZE
@@ -140,7 +143,9 @@ class Game:
         if self.board.empty_sqr(row, col):
             self.board.mark_sqr(row, col, self.player)
             self.player = 'O' if self.player == 'X' else 'X'
-
+            
+    # Function to implement minimax algorithm which helps in determining the best move for AI
+    # This function will use the minimax algorithm to determine the best move for the AI
     def minimax(self, board, depth, isMaximizing):
         winner = board.final_state()
         if winner == AI:
@@ -177,7 +182,8 @@ class Game:
                         score['col'] = col
                         best_score = min(best_score, score, key=lambda x:x['score'])
             return best_score
-
+        
+    # This function will handle AI moves when the game mode is player versus AI
     def handle_ai_move(self):
         if self.board.is_empty():
             row, col = random.choice([(0, 0), (0, 2), (2, 0), (2, 2)])
@@ -187,7 +193,7 @@ class Game:
         self.board.mark_sqr(row, col, self.player)
         self.player = 'X'
 
-
+    # This function will handle updating the game display with the current game state
     def update_screen(self):
         screen.fill(BG_COLOR)
 
@@ -219,7 +225,7 @@ class Game:
         if winner:
             self.board.draw_winning_line(winner)
         
-    
+    # This function will run the main game loop
     def run(self):
         clock = pg.time.Clock()
         while self.running:
@@ -240,6 +246,7 @@ class Game:
                 self.reset()
             clock.tick(FPS)
 
+    # This function will reset the game state to its initial state
     def reset(self):
         self.board = Board()
         self.player = 'X'
