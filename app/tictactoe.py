@@ -1,167 +1,144 @@
 import pygame as pg
 from pygame.locals import *
-from constants import *
 import sys
+from constants import *
 
 pg.init()
 
-# Initialize the game variables
-XO = 'X'
-AI = 'O'
-fps = 60
-CLOCK = pg.time.Clock()
+class Board:
+    def __init__(self):
+        self.squares = [[None] * 3 for _ in range(3)]
+        self.marked_sqrs = 0
 
-# Set up the game window
-screen = pg.display.set_mode((WIDTH, HEIGHT), 0, 32)
-pg.display.set_caption("TIC TAC TOE")
-initiating_window = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/gameboard.png")
+    def final_state(self, show=False):
+        for col in range(3):
+            if self.squares[0][col] == self.squares[1][col] == self.squares[2][col] and self.squares[0][col] is not None:
+                if show:
+                    color = CIRC_COLOR if self.squares[0][col] == 'O' else CROSS_COLOR
+                    iPos = (col * SQSIZE + SQSIZE // 2, 20)
+                    fPos = (col * SQSIZE + SQSIZE // 2, HEIGHT - 20)
+                    pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
+                return self.squares[0][col]
 
-# Load the X and O images
-x_img = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/X.jpg")
-o_img = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/O.jpg")
+        for row in range(3):
+            if self.squares[row][0] == self.squares[row][1] == self.squares[row][2] and self.squares[row][0] is not None:
+                if show:
+                    color = CIRC_COLOR if self.squares[row][0] == 'O' else CROSS_COLOR
+                    iPos = (20, row * SQSIZE + SQSIZE // 2)
+                    fPos = (WIDTH - 20, row * SQSIZE + SQSIZE // 2)
+                    pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
+                return self.squares[row][0]
 
-# Scale the game window and images
-initiating_window = pg.transform.scale(initiating_window, (400, 400))
-x_img = pg.transform.scale(x_img, (120, 120))
-o_img = pg.transform.scale(o_img, (120, 120))
+        if self.squares[0][0] == self.squares[1][1] == self.squares[2][2] and self.squares[0][0] is not None:
+            if show:
+                color = CIRC_COLOR if self.squares[0][0] == 'O' else CROSS_COLOR
+                iPos = (20, 20)
+                fPos = (WIDTH - 20, HEIGHT - 20)
+                pg.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
+            return self.squares[0][0]
 
-winner = None
-draw = False
-board = [[None] * 3, [None] * 3, [None] * 3]
+        if self.squares[2][0] == self.squares[1][1] == self.squares[0][2] and self.squares[2][0] is not None:
+            if show:
+                color = CIRC_COLOR if self.squares[2][0] == 'O' else CROSS_COLOR
+                iPos = (20, HEIGHT - 20)
+                fPos = (WIDTH - 20, 20)
+                pg.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
+            return self.squares[2][0]
 
-def main():
-    while True:
-        handle_user_input()
+        return None
+
+    def mark_sqr(self, row, col, player):
+        self.squares[row][col] = player
+        self.marked_sqrs += 1
+
+    def empty_sqr(self, row, col):
+        return self.squares[row][col] is None
+
+    def get_empty_sqrs(self):
+        empty_sqrs = []
+        for row in range(3):
+            for col in range(3):
+                if self.empty_sqr(row, col):
+                    empty_sqrs.append((row, col))
+        return empty_sqrs
+
+    def is_full(self):
+        return self.marked_sqrs == 9
+
+    def is_empty(self):
+        return self.marked_sqrs == 0
+
+class Game:
+    def __init__(self):
+        self.board = Board()
+        self.player = 'X'
+        self.running = True
+
+    def handle_user_input(self):
+        for event in pg.event.get():
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                self.running = False
+            elif event.type == MOUSEBUTTONDOWN and not self.board.final_state() and not self.board.is_full():
+                mouse_pos = pg.mouse.get_pos()
+                col = mouse_pos[0] // SQSIZE
+                row = mouse_pos[1] // SQSIZE
+                if self.board.empty_sqr(row, col):
+                    self.board.mark_sqr(row, col, self.player)
+                    self.player = 'O' if self.player == 'X' else 'X'
+
+    def update_screen(self):
         screen.fill(BG_COLOR)
-        screen.blit(initiating_window, (0, 0))
-        # Draw X and O images on the board based on the current game state
+        
+        # Draw grid lines
+        for x in range(SQSIZE, WIDTH, SQSIZE):
+            pg.draw.line(screen, LINE_COLOR, (x, 0), (x, HEIGHT), LINE_WIDTH)
+        for y in range(SQSIZE, HEIGHT, SQSIZE):
+            pg.draw.line(screen, LINE_COLOR, (0, y), (WIDTH, y), LINE_WIDTH)
+        
         for row in range(3):
             for col in range(3):
-                if board[row][col] == 'X':
-                    screen.blit(x_img, (col * 133 + 10, row * 133 + 10))
-                elif board[row][col] == 'O':
-                    screen.blit(o_img, (col * 133 + 10, row * 133 + 10))
+                if self.board.squares[row][col] == 'X':
+                    x_pos = col * SQSIZE + OFFSET
+                    y_pos = row * SQSIZE + OFFSET
+                    pg.draw.line(screen, CROSS_COLOR, (x_pos, y_pos), (x_pos + SQSIZE - 2 * OFFSET, y_pos + SQSIZE - 2 * OFFSET), CROSS_WIDTH)
+                    pg.draw.line(screen, CROSS_COLOR, (x_pos, y_pos + SQSIZE - 2 * OFFSET), (x_pos + SQSIZE - 2 * OFFSET, y_pos), CROSS_WIDTH)
+                elif self.board.squares[row][col] == 'O':
+                    x_pos = col * SQSIZE + SQSIZE // 2
+                    y_pos = row * SQSIZE + SQSIZE // 2
+                    pg.draw.circle(screen, CIRC_COLOR, (x_pos, y_pos), RADIUS, CIRC_WIDTH)
         pg.display.update()
-        CLOCK.tick(fps)
 
-# Function to update the game state after each move
-def update_game_state():
-    global XO, winner, draw
-    winner = check_winner()
-    if winner:
-        print(f"Player {winner} wins!")
-    draw = check_draw()
-    if draw:
-        print("It's a draw!")
-    if XO == 'X':
-        XO = 'O'
-    else:
-        XO = 'X'
+    def run(self):
+        while self.running:
+            self.handle_user_input()
+            self.update_screen()
+            if self.board.final_state(show=True) or self.board.is_full():
+                self.running = False
+                
+    
+    # --- OTHER METHODS ---
+    
+    def make_move(self, row, col):
+        self.board.mark_sqr(row, col, self.player)
+        self.update_screen()
+        self.next_turn()
 
-# Function to check if there is a winner
-def check_winner():
-    # Check rows for a win
-    for row in range(3):
-        if board[row][0] == board[row][1] == board[row][2] and board[row][0] is not None:
-            return board[row][0]
-        
-    # Check columns for a win
-    for col in range(3):
-        if board[0][col] == board[1][col] == board[2][col] and board[0][col] is not None:
-            return board[0][col]
-        
-    # Check diagonals for a win
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] is not None:
-        return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] and board[0][2] is not None:
-        return board[0][2]
-    return None
+    def next_turn(self):
+        self.player = 'O' if self.player == 'X' else 'X'
 
-# Function to check if the game is a draw
-def check_draw():
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] is None:
-                return False
-    return True
+    def reset(self):
+        self.board = Board()
+        self.player = 'X'
+        self.running = True
+        self.update_screen()
 
-# Function to handle user input events
-def handle_user_input():
-    global XO, winner, draw
-    for event in pg.event.get():
-        if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-            pg.quit()
-            sys.exit()
-        elif event.type == MOUSEBUTTONDOWN and not winner and not draw:
-            mouse_pos = pg.mouse.get_pos()
-            # Calculate the clicked cell based on mouse position
-            col = mouse_pos[0] // 133
-            row = mouse_pos[1] // 133
-            # Make a move if the cell is empty
-            if board[row][col] is None:
-                board[row][col] = XO
-                update_game_state()
-                if not winner and not draw:
-                    ai_move()
 
-# Function to make AI move using the Minimax algorithm
-def ai_move():
-    best_score = float('-inf')
-    best_move = None
+screen = pg.display.set_mode((WIDTH, HEIGHT))
+pg.display.set_caption("Tic Tac Toe")
 
-    # Loop through all possible moves
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] is None:
-                board[row][col] = AI
-                score = minimax(board, 0, False)
-                board[row][col] = None
+game = Game()
+game.run()
 
-                # Update the best move
-                if score > best_score:
-                    best_score = score
-                    best_move = (row, col)
-
-    # Make the best move
-    if best_move:
-        row, col = best_move
-        board[row][col] = AI
-        update_game_state()
-
-# Minimax algorithm
-def minimax(board, depth, is_maximizing):
-    result = check_winner()
-    if result is not None:
-        return scores[result]
-
-    if check_draw():
-        return 0
-
-    if is_maximizing:
-        best_score = float('-inf')
-        for row in range(3):
-            for col in range(3):
-                if board[row][col] is None:
-                    board[row][col] = AI
-                    score = minimax(board, depth + 1, False)
-                    board[row][col] = None
-                    best_score = max(score, best_score)
-        return best_score
-    else:
-        best_score = float('inf')
-        for row in range(3):
-            for col in range(3):
-                if board[row][col] is None:
-                    board[row][col] = XO
-                    score = minimax(board, depth + 1, True)
-                    board[row][col] = None
-                    best_score = min(score, best_score)
-        return best_score
-
-# Define scores for AI and user
-scores = {'O': 1, 'X': -1, 'draw': 0}
-
-main()
 # Quit the game
 pg.quit()
 sys.exit()
