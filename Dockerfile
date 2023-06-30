@@ -1,8 +1,10 @@
+FROM python:3.9-slim-bullseye
 
-FROM python:3.8-slim-buster
-WORKDIR /impossible-tictactoe/app
-RUN pip install --upgrade pip
-RUN pip install virtualenv
-RUN virtualenv -p /bin/python
-RUN source activate tictactoe
-CMD [ "python", "./app/tictactoe.py" ]
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Run the application:
+COPY myapp.py .
+CMD ["python", "myapp.py"]
+
