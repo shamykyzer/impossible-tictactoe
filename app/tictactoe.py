@@ -57,6 +57,33 @@ class Board:
             return self.squares[2][0]
 
         return None
+    
+    def draw_winning_line(self, winner):
+        for col in range(3):
+            if self.squares[0][col] == self.squares[1][col] == self.squares[2][col] and self.squares[0][col] is not None:
+                color = CIRC_COLOR if self.squares[0][col] == 'O' else CROSS_COLOR
+                iPos = (col * SQSIZE + SQSIZE // 2, 20)
+                fPos = (col * SQSIZE + SQSIZE // 2, HEIGHT - 20)
+                pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
+
+        for row in range(3):
+            if self.squares[row][0] == self.squares[row][1] == self.squares[row][2] and self.squares[row][0] is not None:
+                color = CIRC_COLOR if self.squares[row][0] == 'O' else CROSS_COLOR
+                iPos = (20, row * SQSIZE + SQSIZE // 2)
+                fPos = (WIDTH - 20, row * SQSIZE + SQSIZE // 2)
+                pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
+
+        if self.squares[0][0] == self.squares[1][1] == self.squares[2][2] and self.squares[0][0] is not None:
+            color = CIRC_COLOR if self.squares[0][0] == 'O' else CROSS_COLOR
+            iPos = (20, 20)
+            fPos = (WIDTH - 20, HEIGHT - 20)
+            pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
+
+        if self.squares[2][0] == self.squares[1][1] == self.squares[0][2] and self.squares[2][0] is not None:
+            color = CIRC_COLOR if self.squares[2][0] == 'O' else CROSS_COLOR
+            iPos = (20, HEIGHT - 20)
+            fPos = (WIDTH - 20, 20)
+            pg.draw.line(screen, color, iPos, fPos, LINE_WIDTH)
 
     def mark_sqr(self, row, col, player):
         self.squares[row][col] = player
@@ -186,16 +213,31 @@ class Game:
         text = font.render(mode_text, True, TEXT_COLOR)
         screen.blit(text, (10, 10))
 
-        pg.display.update()
-
+        pg.display.update()    
+        
+        winner = self.board.final_state()
+        if winner:
+            self.board.draw_winning_line(winner)
+        
+    
     def run(self):
         clock = pg.time.Clock()
         while self.running:
             self.handle_user_input()
-            self.update_screen()
             if self.mode == 'AI' and self.player == AI and not self.board.final_state() and not self.board.is_full():
                 self.handle_ai_move()
                 self.player = 'X'
+            self.update_screen()
+            winner = self.board.final_state()
+            if winner:
+                self.board.draw_winning_line(winner)
+                pg.display.update()
+                pg.time.wait(2000)  # pause for 2 seconds to show winning line
+                self.reset()
+            elif self.board.is_full():
+                pg.display.update()
+                pg.time.wait(2000)  # pause for 2 seconds to show draw state
+                self.reset()
             clock.tick(FPS)
 
     def reset(self):
