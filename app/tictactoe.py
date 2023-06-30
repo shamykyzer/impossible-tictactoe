@@ -1,5 +1,6 @@
 import pygame as pg
 from pygame.locals import *
+from constants import *
 import sys
 
 pg.init()
@@ -7,12 +8,12 @@ pg.init()
 # Initialize the game variables
 XO = 'X'
 AI = 'O'
-fps = 30
+fps = 60
 CLOCK = pg.time.Clock()
 
 # Set up the game window
 screen = pg.display.set_mode((400, 400), 0, 32)
-pg.display.set_caption("IMPOSSIBLE Tic Tac Toe")
+pg.display.set_caption("TIC TAC TOE")
 initiating_window = pg.image.load("/Users/ahmedalshamy/impossible-tictactoe/common/gameboard.png")
 
 # Load the X and O images
@@ -48,10 +49,12 @@ def check_winner():
     for row in range(3):
         if board[row][0] == board[row][1] == board[row][2] and board[row][0] is not None:
             return board[row][0]
+        
     # Check columns for a win
     for col in range(3):
         if board[0][col] == board[1][col] == board[2][col] and board[0][col] is not None:
             return board[0][col]
+        
     # Check diagonals for a win
     if board[0][0] == board[1][1] == board[2][2] and board[0][0] is not None:
         return board[0][0]
