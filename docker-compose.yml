@@ -1,6 +1,7 @@
 services:
   web:
-    build: ./app/tictactoe.py
+    build: .
+    path: app/tictactoe.py
     ports:
       - "8000:5000"
   redis:
