@@ -140,6 +140,7 @@ class Game:
         mouse_pos = pg.mouse.get_pos()
         col = mouse_pos[0] // SQSIZE
         row = mouse_pos[1] // SQSIZE
+        
         if self.board.empty_sqr(row, col):
             self.board.mark_sqr(row, col, self.player)
             self.player = 'O' if self.player == 'X' else 'X'
@@ -159,6 +160,7 @@ class Game:
             best_score = {'score': -float('inf'), 'row': None, 'col': None}
             for row in range(3):
                 for col in range(3):
+                    
                     if board.empty_sqr(row, col):
                         board.mark_sqr(row, col, AI)
                         score = self.minimax(board, depth + 1, False)
@@ -167,12 +169,14 @@ class Game:
                         score['row'] = row
                         score['col'] = col
                         best_score = max(best_score, score, key=lambda x:x['score'])
+                        
             return best_score
 
         else:
             best_score = {'score': float('inf'), 'row': None, 'col': None}
             for row in range(3):
                 for col in range(3):
+                    
                     if board.empty_sqr(row, col):
                         board.mark_sqr(row, col, XO)
                         score = self.minimax(board, depth + 1, True)
@@ -181,12 +185,15 @@ class Game:
                         score['row'] = row
                         score['col'] = col
                         best_score = min(best_score, score, key=lambda x:x['score'])
+                        
             return best_score
         
     # This function will handle AI moves when the game mode is player versus AI
     def handle_ai_move(self):
+        
         if self.board.is_empty():
             row, col = random.choice([(0, 0), (0, 2), (2, 0), (2, 2)])
+            
         else:
             move = self.minimax(self.board, 0, True)
             row, col = move['row'], move['col']
@@ -199,16 +206,19 @@ class Game:
 
         for x in range(SQSIZE, WIDTH, SQSIZE):
             pg.draw.line(screen, LINE_COLOR, (x, 0), (x, HEIGHT), LINE_WIDTH)
+            
         for y in range(SQSIZE, HEIGHT, SQSIZE):
             pg.draw.line(screen, LINE_COLOR, (0, y), (WIDTH, y), LINE_WIDTH)
 
         for row in range(3):
             for col in range(3):
+                
                 if self.board.squares[row][col] == 'X':
                     x_pos = col * SQSIZE + OFFSET
                     y_pos = row * SQSIZE + OFFSET
                     pg.draw.line(screen, CROSS_COLOR, (x_pos, y_pos), (x_pos + SQSIZE - 2 * OFFSET, y_pos + SQSIZE - 2 * OFFSET), CROSS_WIDTH)
                     pg.draw.line(screen, CROSS_COLOR, (x_pos, y_pos + SQSIZE - 2 * OFFSET), (x_pos + SQSIZE - 2 * OFFSET, y_pos), CROSS_WIDTH)
+                    
                 elif self.board.squares[row][col] == 'O':
                     x_pos = col * SQSIZE + SQSIZE // 2
                     y_pos = row * SQSIZE + SQSIZE // 2
@@ -228,6 +238,7 @@ class Game:
     # This function will run the main game loop
     def run(self):
         clock = pg.time.Clock()
+        
         while self.running:
             self.handle_user_input()
             if self.mode == 'AI' and self.player == AI and not self.board.final_state() and not self.board.is_full():
@@ -235,11 +246,13 @@ class Game:
                 self.player = 'X'
             self.update_screen()
             winner = self.board.final_state()
+            
             if winner:
                 self.board.draw_winning_line(winner)
                 pg.display.update()
                 pg.time.wait(2000)  # pause for 2 seconds to show winning line
                 self.reset()
+                
             elif self.board.is_full():
                 pg.display.update()
                 pg.time.wait(2000)  # pause for 2 seconds to show draw state
