@@ -9,7 +9,7 @@ pg.init()
 
 # Create the game window
 screen = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("Tic Tac Toe")
+pg.display.set_caption("TIC TAC TOE")
 
 # Initialize the game variables
 XO = 'X'
