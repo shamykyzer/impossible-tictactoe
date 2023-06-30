@@ -6,5 +6,5 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Run the application:
 COPY . app/impossible_tictactoe.py
-CMD ["python", "impossible_tictactoe.py"]
+CMD ["python", "app/impossible_tictactoe.py"]
 
