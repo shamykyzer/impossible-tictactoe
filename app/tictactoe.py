@@ -2,7 +2,7 @@ import pygame as pg
 from pygame.locals import *
 import sys
 import random
-from app.constants import *
+from constants import *
 
 # Initialize pygame
 pg.init()
