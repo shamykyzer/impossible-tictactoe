@@ -7,7 +7,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Install pygame
 RUN /opt/venv/bin/pip install pygame
 
-# Copy the application to the Docker image:
-COPY app/tictactoe.py app/tictactoe.py
+# Set the working directory to /app
+WORKDIR /app
 
-CMD ["python", "app/tictactoe.py"]
+# Copy the application to the Docker image:
+COPY app/tictactoe.py .
+
+CMD ["python", "tictactoe.py"]
