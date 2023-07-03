@@ -11,7 +11,7 @@ RUN /opt/venv/bin/pip install pygame
 WORKDIR /app
 
 # Copy the application to the Docker image
-COPY app/tictactoe.py .
+COPY app /app
 
 # Set the entry point to execute the Python file
 CMD ["/opt/venv/bin/python", "tictactoe.py"]
