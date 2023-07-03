@@ -1,9 +1,9 @@
 services:
   web:
-    build: .
-    path: app/tictactoe.py
+    build:
+      context: .
+      dockerfile: app/tictactoe.py
     ports:
       - "8000:5000"
   redis:
     image: "redis:alpine"
-
