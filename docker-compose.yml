@@ -1,7 +1,8 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
     ports:
       - "8000:5000"
-  redis:
-    image: "redis:alpine"
