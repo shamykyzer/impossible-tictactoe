@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: app/tictactoe.py
+    build: .
     ports:
       - "8000:5000"
   redis:
