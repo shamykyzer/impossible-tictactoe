@@ -13,4 +13,5 @@ WORKDIR /app
 # Copy the application to the Docker image:
 COPY app/tictactoe.py .
 
+# Set the entry point to the Python file
 CMD ["python", "tictactoe.py"]
