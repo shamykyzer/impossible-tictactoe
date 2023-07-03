@@ -1,4 +1,4 @@
-# impossible-tictactoe
+# impossible-TICTACTOE
 a tictactoe ai using Minimax algorithm.
 
 ## PVP mode snipshot
