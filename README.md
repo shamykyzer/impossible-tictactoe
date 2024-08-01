@@ -20,7 +20,6 @@ A simple Tic Tac Toe game using Minimax algorithm, built with Python and Pygame.
    git clone https://github.com/yourusername/tic-tac-toe.git
 
 ## PVP mode
-![image](https://github.com/ShamyLP/impossible-tictactoe/assets/137077986/129eecb5-06cc-49bc-a016-73e17e2a0371)
-
+![image](https://github.com/ShamyLP/impossible-tictactoe/assets/137077986/129eecb5-06cc-49bc-a016-73e17e2a0371) 
 ## AI mode
 ![image](https://github.com/ShamyLP/impossible-tictactoe/assets/137077986/3f30d4a4-dd84-4387-a091-ed9680b51851)
